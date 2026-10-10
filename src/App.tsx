@@ -18,7 +18,7 @@ import {
   DIFFICULTY_SETTINGS,
 } from './types/game';
 import { ALL_TYPE_IDS } from './data/typesInfo';
-import { hasType, formatPokemonName } from './utils/pokemonApi';
+import { hasType, formatPokemonName, getValidCombiningTypes } from './utils/pokemonApi';
 import { getWebSocketUrl } from './config';
 import { soundManager } from './utils/audio';
 import { TypeDisplay } from './components/TypeDisplay';
@@ -435,17 +435,36 @@ export default function App() {
     const maxShuffles = Math.max(4, Math.floor(totalDurationMs / intervalTime));
     let shuffleCount = 0;
 
+    const maxDexId = diffConfig?.maxPokemonDex ?? 1025;
+
+    // Solo sempre sorteia um par duplo compatível dentro da pool da dificuldade
+    const rollDualType = (): PokemonTypeId | PokemonTypeId[] => {
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const t1 = ALL_TYPE_IDS[Math.floor(Math.random() * ALL_TYPE_IDS.length)];
+        const partners = Array.from(getValidCombiningTypes(t1, maxDexId));
+        if (partners.length > 0) {
+          const t2 = partners[Math.floor(Math.random() * partners.length)];
+          return [t1, t2];
+        }
+        // Ex.: 'dark' não tem nenhum Pokémon na pool do hard (151) — tenta outro tipo
+      }
+      return ALL_TYPE_IDS[Math.floor(Math.random() * ALL_TYPE_IDS.length)];
+    };
+
+    const rollShufflePair = (): PokemonTypeId[] => {
+      const a = ALL_TYPE_IDS[Math.floor(Math.random() * ALL_TYPE_IDS.length)];
+      const b = ALL_TYPE_IDS[Math.floor(Math.random() * ALL_TYPE_IDS.length)];
+      return [a, b];
+    };
+
     const shuffleInterval = setInterval(() => {
-      const randomIdx = Math.floor(Math.random() * ALL_TYPE_IDS.length);
-      const randomType = ALL_TYPE_IDS[randomIdx];
-      setShufflingType(randomType);
+      setShufflingType(rollShufflePair());
       soundManager.playTick();
       shuffleCount++;
 
       if (shuffleCount >= maxShuffles) {
         clearInterval(shuffleInterval);
-        const chosenType = ALL_TYPE_IDS[Math.floor(Math.random() * ALL_TYPE_IDS.length)];
-        setCurrentType(chosenType);
+        setCurrentType(rollDualType());
         setShufflingType(null);
         soundManager.playTypeSelected();
         setStatus('playing');

@@ -170,7 +170,7 @@ export const GameIntroStudio: React.FC<GameIntroStudioProps> = ({
     const facil = renderMaterial3Control({
       type: 'filled-button',
       label: 'FÁCIL',
-      sublabel: 'Gen 1 a 2 • 20 Segundos',
+      sublabel: 'Todas as Gerações • 20 Segundos',
       primaryColor: ACCENT_COLOR,
       onPrimaryColor: '#022c22',
       surfaceColor: M3_SURFACE,
@@ -183,7 +183,7 @@ export const GameIntroStudio: React.FC<GameIntroStudioProps> = ({
     const medio = renderMaterial3Control({
       type: 'filled-button',
       label: 'MÉDIO',
-      sublabel: 'Gen 1 a 5 • 15 Segundos',
+      sublabel: 'Gen 1 a 4 • 15 Segundos',
       primaryColor: ACCENT_COLOR,
       onPrimaryColor: '#022c22',
       surfaceColor: M3_SURFACE,
@@ -196,7 +196,7 @@ export const GameIntroStudio: React.FC<GameIntroStudioProps> = ({
     const dificil = renderMaterial3Control({
       type: 'filled-button',
       label: 'DIFÍCIL',
-      sublabel: 'Todas as Gerações • 10s',
+      sublabel: 'Só Kanto (151) • 10 Segundos',
       primaryColor: ACCENT_COLOR,
       onPrimaryColor: '#022c22',
       surfaceColor: M3_SURFACE,

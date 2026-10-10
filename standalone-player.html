@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game UI Studio - Game UI Prototype Player</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background-color: #090a0f;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      height: 48px;
+      background: #11141c;
+      border-bottom: 1px solid #1e2433;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 13px;
+      z-index: 50;
+    }
+    .header-title { font-weight: 600; color: #f8fafc; }
+    .controls { display: flex; gap: 8px; align-items: center; }
+    button {
+      background: #1e2433;
+      color: #f1f5f9;
+      border: 1px solid #334155;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    button:hover { background: #334155; }
+    .btn-active { background: #38bdf8; color: #020617; border-color: #38bdf8; font-weight: 600; }
+    
+    #viewport-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: radial-gradient(circle at center, #131722 0%, #06070a 100%);
+      padding: 16px;
+    }
+    #game-canvas {
+      position: relative;
+      aspect-ratio: 1365 / 768;
+      width: 100%;
+      max-width: 1280px;
+      max-height: calc(100vh - 80px);
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+    .screen-container {
+      position: absolute;
+      inset: 0;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .screen-layer {
+      position: absolute;
+      object-fit: fill;
+      pointer-events: none;
+    }
+    .hitbox {
+      position: absolute;
+      cursor: pointer;
+      z-index: 100;
+      transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+    }
+    .hitbox-debug {
+      background: rgba(56, 189, 248, 0.25) !important;
+      border: 2px dashed #38bdf8 !important;
+    }
+    .hitbox-rect { border-radius: 4px; }
+    .hitbox-circle { border-radius: 50%; }
+    .hitbox-pill { border-radius: 9999px; }
+    .hitbox:hover {
+      filter: brightness(1.2);
+      transform: scale(1.02);
+    }
+    .hitbox:active {
+      transform: scale(0.98);
+    }
+    #event-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      border: 1px solid #38bdf8;
+      color: #f8fafc;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: monospace;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 1000;
+    }
+    #event-toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-title">Game UI Studio &mdash; Prototype Player</div>
+    <div class="controls">
+      <span id="current-slide-label" style="color: #94a3b8; font-family: monospace;">Slide: 1/3</span>
+      <button id="toggle-hitboxes-btn">Show Hitboxes</button>
+      <button id="restart-btn">Restart</button>
+    </div>
+  </header>
+
+  <div id="viewport-container">
+    <div id="game-canvas"></div>
+  </div>
+
+  <div id="event-toast"></div>
+
+  <script>
+    const PROJECT = {"schemaVersion":"1.0.0","title":"Game UI Studio","description":"Interface de jogo em camadas com hitboxes interativas baseadas na resolução da imagem de fundo.","resolution":{"width":1365,"height":768,"name":"1365 × 768 (16:9)","aspectRatio":"16:9"},"initialSlideId":"slide-1","slideCount":2,"slides":[{"id":"slide-1","title":"01. Tela do Jogo","description":"Adicione a imagem de fundo para calibrar a resolução nativa do projeto e monte as camadas visuais e hitboxes.","backgroundColor":"#0a0d14","backgroundImageAssetId":"asset-bg-1791593848688","transitionIn":"fade","transitionDurationMs":350,"layerHierarchy":[{"zIndex":1,"id":"layer-1791593860755","name":"Poke","type":"image","assetId":"asset-upload-1791593854671","transform":{"xPercent":-0.3,"yPercent":-0.8,"widthPercent":100.5,"heightPercent":100.7,"xPixels":-4,"yPixels":-6,"widthPixels":1372,"heightPixels":773,"rotationDeg":0,"opacity":1}},{"zIndex":2,"id":"layer-1791593869515","name":"Text","type":"image","assetId":"asset-upload-1791593856647","transform":{"xPercent":0.1,"yPercent":-0.8,"widthPercent":99.6,"heightPercent":100.4,"xPixels":1,"yPixels":-6,"widthPixels":1360,"heightPixels":771,"rotationDeg":0,"opacity":1}}],"boundingBoxes":[{"id":"bbox-from-layer-1791593860755","name":"Hitbox Poke","shape":"rect","bounds":{"xPercent":-0.3,"yPercent":-0.8,"widthPercent":100.5,"heightPercent":100.7,"xPixels":-4,"yPixels":-6,"widthPixels":1372,"heightPixels":773,"curvaturePercent":0,"centerPixels":{"x":682,"y":381}},"action":{"type":"NAVIGATE_SLIDE","transitionEffect":"fade","transitionDuration":350,"targetSlideId":"slide-1791593896020"},"hoverEffect":"glow","layerZIndex":50,"linkedElementId":"layer-1791593860755"}]},{"id":"slide-1791593896020","title":"02. Nova Tela / Estado","description":"Estado de interface recém-criado","backgroundColor":"#0a0d14","backgroundImageAssetId":"asset-bg-1791593898711","transitionIn":"fade","transitionDurationMs":350,"layerHierarchy":[{"zIndex":1,"id":"layer-1791593907084","name":"Poke","type":"image","assetId":"asset-upload-1791593854671","transform":{"xPercent":73.3,"yPercent":-0.8,"widthPercent":99.9,"heightPercent":100.6,"xPixels":1001,"yPixels":-6,"widthPixels":1364,"heightPixels":773,"rotationDeg":0,"opacity":1}},{"zIndex":2,"id":"layer-1791593944701","name":"Text","type":"image","assetId":"asset-upload-1791593856647","transform":{"xPercent":-1.5,"yPercent":0,"widthPercent":100.4,"heightPercent":100.3,"xPixels":-20,"yPixels":0,"widthPixels":1370,"heightPixels":770,"rotationDeg":0,"opacity":1}},{"zIndex":25,"id":"layer-m3-multiplayer-1791594002567","name":"M3: MULTIPLAYER (filled-button)","type":"image","assetId":"asset-m3-multiplayer-normal-1791594002567","transform":{"xPercent":58.5,"yPercent":36.5,"widthPercent":37,"heightPercent":17.8,"xPixels":799,"yPixels":280,"widthPixels":505,"heightPixels":137,"rotationDeg":0,"opacity":1},"entranceAnimation":{"type":"scale-up","duration":350,"delay":0}},{"zIndex":25,"id":"layer-m3-singleplayer-1791594055296","name":"M3: SINGLEPLAYER (elevated-button)","type":"image","assetId":"asset-m3-singleplayer-normal-1791594055296","transform":{"xPercent":58.5,"yPercent":54.2,"widthPercent":37,"heightPercent":17.8,"xPixels":799,"yPixels":416,"widthPixels":505,"heightPixels":137,"rotationDeg":0,"opacity":1},"entranceAnimation":{"type":"scale-up","duration":350,"delay":0}}],"boundingBoxes":[{"id":"bbox-m3-multiplayer-1791594002567","name":"Hitbox MULTIPLAYER","shape":"pill","bounds":{"xPercent":58.5,"yPercent":36.5,"widthPercent":37,"heightPercent":17.8,"xPixels":799,"yPixels":280,"widthPixels":505,"heightPixels":137,"curvaturePercent":50,"centerPixels":{"x":1051,"y":349}},"action":{"type":"NAVIGATE_SLIDE","customEventName":"TOGGLE_MULTIPLAYER","transitionEffect":"fade","transitionDuration":250},"hoverEffect":"glow","layerZIndex":65,"linkedElementId":"layer-m3-multiplayer-1791594002567"},{"id":"bbox-m3-singleplayer-1791594055296","name":"Hitbox SINGLEPLAYER","shape":"pill","bounds":{"xPercent":58.5,"yPercent":54.2,"widthPercent":37,"heightPercent":17.8,"xPixels":799,"yPixels":416,"widthPixels":505,"heightPixels":137,"curvaturePercent":50,"centerPixels":{"x":1051,"y":485}},"action":{"type":"NAVIGATE_SLIDE","customEventName":"TOGGLE_SINGLEPLAYER","transitionEffect":"fade","transitionDuration":250},"hoverEffect":"glow","layerZIndex":65,"linkedElementId":"layer-m3-singleplayer-1791594055296"}]}],"assets":[{"id":"asset-m3-singleplayer-normal-1791594055296","name":"m3_singleplayer_normal.png","fileName":"assets/m3_singleplayer_normal.png","width":240,"height":64},{"id":"asset-m3-singleplayer-hovered-1791594055296","name":"m3_singleplayer_hovered.png","fileName":"assets/m3_singleplayer_hovered.png","width":240,"height":64},{"id":"asset-m3-singleplayer-pressed-1791594055296","name":"m3_singleplayer_pressed.png","fileName":"assets/m3_singleplayer_pressed.png","width":240,"height":64},{"id":"asset-m3-multiplayer-normal-1791594002567","name":"m3_multiplayer_normal.png","fileName":"assets/m3_multiplayer_normal.png","width":240,"height":64},{"id":"asset-m3-multiplayer-hovered-1791594002567","name":"m3_multiplayer_hovered.png","fileName":"assets/m3_multiplayer_hovered.png","width":240,"height":64},{"id":"asset-m3-multiplayer-pressed-1791594002567","name":"m3_multiplayer_pressed.png","fileName":"assets/m3_multiplayer_pressed.png","width":240,"height":64},{"id":"asset-bg-1791593898711","name":"BG.png","fileName":"assets/BG.png","width":1365,"height":768},{"id":"asset-upload-1791593856647","name":"Text.png","fileName":"assets/Text.png","width":1376,"height":768},{"id":"asset-upload-1791593854671","name":"Poke.png","fileName":"assets/Poke.png","width":1365,"height":768},{"id":"asset-bg-1791593848688","name":"BG.png","fileName":"assets/BG.png","width":1365,"height":768}]};
+    let currentSlideId = PROJECT.initialSlideId;
+    let showHitboxes = false;
+    let historyStack = [];
+
+    const canvas = document.getElementById('game-canvas');
+    const toast = document.getElementById('event-toast');
+    const slideLabel = document.getElementById('current-slide-label');
+    const toggleHitboxBtn = document.getElementById('toggle-hitboxes-btn');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    function renderSlide(slideId, transition = 'fade') {
+      const slide = PROJECT.slides.find(s => s.id === slideId);
+      if (!slide) return;
+
+      currentSlideId = slideId;
+      const slideIndex = PROJECT.slides.findIndex(s => s.id === slideId);
+      slideLabel.textContent = "Slide: " + (slideIndex + 1) + "/" + PROJECT.slides.length + " - " + slide.title;
+
+      canvas.innerHTML = '';
+      const screenDiv = document.createElement('div');
+      screenDiv.className = 'screen-container';
+      screenDiv.style.backgroundColor = slide.backgroundColor || '#000';
+
+      // Render image layers
+      slide.layerHierarchy.forEach(layer => {
+        if (layer.type === 'image' && layer.assetId) {
+          const asset = PROJECT.assets.find(a => a.id === layer.assetId);
+          if (asset) {
+            const img = document.createElement('img');
+            img.src = asset.fileName;
+            img.className = 'screen-layer';
+            img.style.left = layer.transform.xPercent + '%';
+            img.style.top = layer.transform.yPercent + '%';
+            img.style.width = layer.transform.widthPercent + '%';
+            img.style.height = layer.transform.heightPercent + '%';
+            img.style.opacity = layer.transform.opacity;
+            img.style.zIndex = layer.zIndex;
+            img.style.transform = "rotate(" + (layer.transform.rotationDeg || 0) + "deg)";
+            screenDiv.appendChild(img);
+          }
+        }
+      });
+
+      // Render interactive bounding boxes
+      slide.boundingBoxes.forEach(bbox => {
+        const box = document.createElement('div');
+        const curvature = bbox.bounds.curvaturePercent !== undefined ? bbox.bounds.curvaturePercent : (bbox.shape === 'circle' ? 100 : bbox.shape === 'pill' ? 50 : 0);
+        box.className = 'hitbox' + (showHitboxes ? ' hitbox-debug' : '');
+        box.style.borderRadius = (curvature / 2) + '%';
+        box.style.left = bbox.bounds.xPercent + '%';
+        box.style.top = bbox.bounds.yPercent + '%';
+        box.style.width = bbox.bounds.widthPercent + '%';
+        box.style.height = bbox.bounds.heightPercent + '%';
+        box.style.zIndex = bbox.layerZIndex || 50;
+
+        box.title = bbox.name + " (" + bbox.shape + ")";
+
+        box.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleAction(bbox.action, bbox.name);
+        });
+
+        screenDiv.appendChild(box);
+      });
+
+      canvas.appendChild(screenDiv);
+    }
+
+    function handleAction(action, bboxName) {
+      if (!action) return;
+      console.log('[GameUI Action]', action.type, action);
+
+      if (action.type === 'NAVIGATE_SLIDE' && action.targetSlideId) {
+        historyStack.push(currentSlideId);
+        renderSlide(action.targetSlideId, action.transitionEffect);
+        showToast("Navigate -> " + action.targetSlideId);
+      } else if (action.type === 'GO_BACK') {
+        const prev = historyStack.pop() || PROJECT.initialSlideId;
+        renderSlide(prev, action.transitionEffect);
+        showToast("Back -> " + prev);
+      } else if (action.type === 'CUSTOM_EVENT') {
+        showToast("Event Dispatched: " + (action.customEventName || 'CUSTOM_EVENT'));
+        console.info('[Game Engine Event Dispatched]:', action.customEventName);
+      } else if (action.type === 'URL_LINK' && action.url) {
+        window.open(action.url, '_blank');
+      }
+    }
+
+    toggleHitboxBtn.addEventListener('click', () => {
+      showHitboxes = !showHitboxes;
+      toggleHitboxBtn.classList.toggle('btn-active', showHitboxes);
+      toggleHitboxBtn.textContent = showHitboxes ? 'Hide Hitboxes' : 'Show Hitboxes';
+      renderSlide(currentSlideId);
+    });
+
+    restartBtn.addEventListener('click', () => {
+      historyStack = [];
+      renderSlide(PROJECT.initialSlideId);
+    });
+
+    // Start on initial slide
+    renderSlide(PROJECT.initialSlideId);
+  </script>
+</body>
+</html>

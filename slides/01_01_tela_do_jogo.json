@@ -1,0 +1,80 @@
+{
+  "id": "slide-1",
+  "title": "01. Tela do Jogo",
+  "description": "Adicione a imagem de fundo para calibrar a resolução nativa do projeto e monte as camadas visuais e hitboxes.",
+  "backgroundColor": "#0a0d14",
+  "backgroundImageAssetId": "asset-bg-1791593848688",
+  "transitionIn": "fade",
+  "transitionDurationMs": 350,
+  "layerHierarchy": [
+    {
+      "zIndex": 1,
+      "id": "layer-1791593860755",
+      "name": "Poke",
+      "type": "image",
+      "assetId": "asset-upload-1791593854671",
+      "transform": {
+        "xPercent": -0.3,
+        "yPercent": -0.8,
+        "widthPercent": 100.5,
+        "heightPercent": 100.7,
+        "xPixels": -4,
+        "yPixels": -6,
+        "widthPixels": 1372,
+        "heightPixels": 773,
+        "rotationDeg": 0,
+        "opacity": 1
+      }
+    },
+    {
+      "zIndex": 2,
+      "id": "layer-1791593869515",
+      "name": "Text",
+      "type": "image",
+      "assetId": "asset-upload-1791593856647",
+      "transform": {
+        "xPercent": 0.1,
+        "yPercent": -0.8,
+        "widthPercent": 99.6,
+        "heightPercent": 100.4,
+        "xPixels": 1,
+        "yPixels": -6,
+        "widthPixels": 1360,
+        "heightPixels": 771,
+        "rotationDeg": 0,
+        "opacity": 1
+      }
+    }
+  ],
+  "boundingBoxes": [
+    {
+      "id": "bbox-from-layer-1791593860755",
+      "name": "Hitbox Poke",
+      "shape": "rect",
+      "bounds": {
+        "xPercent": -0.3,
+        "yPercent": -0.8,
+        "widthPercent": 100.5,
+        "heightPercent": 100.7,
+        "xPixels": -4,
+        "yPixels": -6,
+        "widthPixels": 1372,
+        "heightPixels": 773,
+        "curvaturePercent": 0,
+        "centerPixels": {
+          "x": 682,
+          "y": 381
+        }
+      },
+      "action": {
+        "type": "NAVIGATE_SLIDE",
+        "transitionEffect": "fade",
+        "transitionDuration": 350,
+        "targetSlideId": "slide-1791593896020"
+      },
+      "hoverEffect": "glow",
+      "layerZIndex": 50,
+      "linkedElementId": "layer-1791593860755"
+    }
+  ]
+}

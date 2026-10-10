@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix Remix PokéType Speed Challenge",
+  "description": "Desafio de agilidade Pokémon: encontre o Pokémon do tipo sorteado o mais rápido possível e registre seus pontos no estilo caderno de contagem!",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
